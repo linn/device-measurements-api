@@ -1,0 +1,18 @@
+{
+  "componentName": "tweeter",
+  "measurements": {
+    "spl": {
+      "file": {},
+      "value": {
+        "measuredOn": "2014-02-21T16:49:00Z",
+        "sourceName": "ptest",
+        "sourceVersion": "0.25",
+        "value": 1,
+        "metadata": {
+          "fStart": 10070.8,
+          "fStop": 21514.9
+        }
+      }
+    }
+  }
+}

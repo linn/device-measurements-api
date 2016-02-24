@@ -1,0 +1,10 @@
+#Defaults:exakt !requiretty
+Defaults:exakt lecture=never
+
+Cmnd_Alias EXAKT_CMNDS = /etc/init.d/cloud-exakt-* *
+Cmnd_Alias APT_UPDATE = /usr/bin/apt-get update
+Cmnd_Alias APT_INSTALL = /usr/bin/apt-get install cloud-exakt-services*
+
+exakt ALL = (root) NOPASSWD: EXAKT_CMNDS
+exakt ALL = (root) NOPASSWD: APT_UPDATE
+exakt ALL = (root) NOPASSWD: APT_INSTALL

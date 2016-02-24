@@ -1,0 +1,37 @@
+{
+  "componentName": "tweeter",
+  "measurements": {
+    "spl": {
+      "file": {
+
+      },
+      "value": {
+        "measuredOn": "2014-02-21T16:49:00Z",
+        "sourceName": "ptest",
+        "sourceVersion": "0.25",
+        "value": 1,
+        "metadata": {
+          "fStart": 10070.8,
+          "fStop": 21514.9
+        }
+      }
+    },
+    "impedance": {
+      "value": {
+
+      },
+      "file": {
+        "measuredOn": "2014-02-21T16:50:00Z",
+        "sourceName": "ptest",
+        "sourceVersion": "1.0",
+        "fileType": "tdms",
+        "files": [
+          {
+            "filename": "test.tdms",
+            "href": "\/device-measurements\/files\/specific-tweeter-impedance.tdms"
+          }
+        ]
+      }
+    }
+  }
+}

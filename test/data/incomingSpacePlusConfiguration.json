@@ -1,0 +1,27 @@
+{
+  "dsSerialNumber": "12345",
+  "dsFirmwareVersion": "4.25.1135",
+  "exaktDevices": [
+    {
+      "exaktSerialNumber": "22346",
+      "exaktConfiguration": [
+        "test2",
+        "test3"
+      ],
+      "speakers": [
+        {
+          "speakerSerialNumber": "12347",
+          "speakerVendor": "linn",
+          "speakerType": "klimax350",
+          "speakerChannel": "left"
+        },
+        {
+          "speakerSerialNumber": "12348",
+          "speakerVendor": "linn",
+          "speakerType": "klimax350",
+          "speakerChannel": "right"
+        }
+      ]
+    }
+  ]
+}
