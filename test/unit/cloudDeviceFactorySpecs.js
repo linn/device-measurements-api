@@ -25,6 +25,8 @@ describe('Cloud Device Factory', function () {
             filterBy: function loadCloudProductDescriptorFromStub(vendor, productType, callback) { callback.apply(null, loadProductDescriptorCallbackArgs); }
         };
 
+        proxyquire.noCallThru();
+
         sut = proxyquire('../../cloudDeviceFactory', {
             './repositories/cloudDeviceRepository': deviceRepositoryStub,
             './repositories/cloudProductDescriptorRepository': productDescriptorRepositoryStub

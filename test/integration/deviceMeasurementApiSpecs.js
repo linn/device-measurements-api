@@ -22,6 +22,8 @@ describe('Device Measurements Api', function () {
             filterBy: function loadCloudProductDescriptorFromStub(vendor, productType, callback) { callback.apply(null, loadProductDescriptorCallbackArgs); }
         };
 
+        proxyquire.noCallThru();
+
         cloudDeviceFactory = proxyquire('../../cloudDeviceFactory', {
             './repositories/cloudDeviceRepository': deviceRepositoryStub,
             './repositories/cloudProductDescriptorRepository': productDescriptorRepositoryStub

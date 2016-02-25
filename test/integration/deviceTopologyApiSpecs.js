@@ -17,6 +17,7 @@ describe('Device Topology Api', function () {
             filterBySerialNumber: sinon.spy(function filterBySerialNumberStub(id, callback) { callback.apply(null, loadCallbackArgs); }),
             addOrReplace: sinon.spy(function addOrReplaceStub(item, callback) { callback.apply(null); })
         };
+        proxyquire.noCallThru();
         sut = proxyquire('../../routes/deviceTopologyApi', {
             '../repositories/deviceTopologiesRepository': repositoryStub
         });
