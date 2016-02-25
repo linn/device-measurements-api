@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SYSROOT=deb-src/sysroot
-TARGET_DIR=${SYSROOT}/opt/linn/exakt-cloud
+TARGET_DIR=${SYSROOT}/opt/linn/device-measurements-api
 DEBIAN=deb-src/DEBIAN
 
 CONFIGURATION=${1}
@@ -9,9 +9,9 @@ BRANCH=${2}
 BUILD_NUMBER=${3}
 PRODUCTION_RELEASE=${4}
 
-GIT_COMMIT=`git ls-remote git@it:/home/git/exakt-cloud.git ${BRANCH} | cut -f 1`
+GIT_COMMIT=`git show-ref origin/${BRANCH} | grep remotes | cut -d ' ' -f 1`
 TIMESTAMP=`date --utc +%FT%TZ`
-PACKAGE_NAME="cloud-exakt-services"
+PACKAGE_NAME="device-measurements-api"
 PACKAGE_VERSION="0.${BUILD_NUMBER}"
 if [ ${PRODUCTION_RELEASE} = true ]
 	then
@@ -37,54 +37,32 @@ mkdir -p ${SYSROOT}/etc/init.d
 
 # Get files for Deb file
 echo "Packaging Template"
-git archive --format=tar --remote=git@it:/home/git/exakt-cloud.git ${BRANCH} | tar --directory=${TARGET_DIR} -xf -
+git archive --format=tar origin/${BRANCH} | tar --directory=${TARGET_DIR} -xf -
 
-# Copy Environment
-echo "Copying Environment"
-mkdir -p ${TARGET_DIR}/CloudExaktPopulator/config
-git archive --format=tar --remote=git@it:/home/git/exakt-cloud.git ${BRANCH}:CloudExaktPopulator/config ${CONFIGURATION}.js | tar --directory=${TARGET_DIR}/CloudExaktPopulator/config -xf -
-mkdir -p ${TARGET_DIR}/CloudExaktService/config
-git archive --format=tar --remote=git@it:/home/git/exakt-cloud.git ${BRANCH}:CloudExaktService/config ${CONFIGURATION}.js | tar --directory=${TARGET_DIR}/CloudExaktService/config -xf -
-
-# Only copy ddl.js if deploying to int
-if [ ${CONFIGURATION} = "int" ]
-then
-	echo "Copying Populator DDL library"
-	mkdir -p ${TARGET_DIR}/CloudExaktPopulator/config/libs
-	git archive --format=tar --remote=git@it:/home/git/exakt-cloud.git ${BRANCH}:CloudExaktPopulator/config/libs ddl.js | tar --directory=${TARGET_DIR}/CloudExaktPopulator/config/libs -xf -
-	echo "Copying Service DDL library"
-	mkdir -p ${TARGET_DIR}/CloudExaktService/config/libs
-	git archive --format=tar --remote=git@it:/home/git/exakt-cloud.git ${BRANCH}:CloudExaktService/config/libs ddl.js | tar --directory=${TARGET_DIR}/CloudExaktService/config/libs -xf -
-    PACKAGE_NAME="cloud-exakt-services-int"
-fi
+# Libs
+echo "Downloading dependant libraries"
+npm install
+cp -Rpu node_modules ${TARGET_DIR}
 
 # Create ping resources
 echo "Creating ping resources"
-echo "{ \"timeStamp\": \"${TIMESTAMP}\", \"config\": \"${CONFIGURATION}\", \"branch\": \"${BRANCH}\", \"build\": \"${BUILD_NUMBER}\", \"commit\": \"${GIT_COMMIT}\" }" > ${TARGET_DIR}/CloudExaktPopulator/ping.json
-echo "{ \"timeStamp\": \"${TIMESTAMP}\", \"config\": \"${CONFIGURATION}\", \"branch\": \"${BRANCH}\", \"build\": \"${BUILD_NUMBER}\", \"commit\": \"${GIT_COMMIT}\" }" > ${TARGET_DIR}/CloudExaktService/ping.json
+echo "{ \"timeStamp\": \"${TIMESTAMP}\", \"config\": \"${CONFIGURATION}\", \"branch\": \"${BRANCH}\", \"build\": \"${BUILD_NUMBER}\", \"commit\": \"${GIT_COMMIT}\" }" > ${TARGET_DIR}/ping.json
 
-echo "Copying Cloud Exakt Service Init Script"
-git archive --format=tar --remote=git@it:/home/git/exakt-cloud.git ${BRANCH}:ContinuousIntegration/Deploy/startup-scripts cloud-exakt-service.${CONFIGURATION} | tar --directory=${SYSROOT}/etc/init.d/ -xf -
-mv ${SYSROOT}/etc/init.d/cloud-exakt-service.${CONFIGURATION} ${SYSROOT}/etc/init.d/cloud-exakt-service
-chmod +x ${SYSROOT}/etc/init.d/cloud-exakt-service
-
-echo "Copying Cloud Exakt Populator Init Script"
-git archive --format=tar --remote=git@it:/home/git/exakt-cloud.git ${BRANCH}:ContinuousIntegration/Deploy/startup-scripts cloud-exakt-populator.${CONFIGURATION} | tar --directory=${SYSROOT}/etc/init.d/ -xf -
-mv ${SYSROOT}/etc/init.d/cloud-exakt-populator.${CONFIGURATION} ${SYSROOT}/etc/init.d/cloud-exakt-populator
-chmod +x ${SYSROOT}/etc/init.d/cloud-exakt-populator
+echo "Copying Init Script"
+git archive --format=tar origin/${BRANCH}:ContinuousIntegration/Package/init.d device-measurements-api | tar --directory=${SYSROOT}/etc/init.d/ -xf -
+chmod +x ${SYSROOT}/etc/init.d/device-measurements-api
 
 echo "Create preinst file"
-echo "if [ -e /etc/init.d/cloud-exakt-service ]" > ${DEBIAN}/preinst
+echo "if [ -e /etc/init.d/device-measurements-api ]" >> ${DEBIAN}/preinst
 echo "then" >> ${DEBIAN}/preinst
-echo "/etc/init.d/cloud-exakt-service stop" >> ${DEBIAN}/preinst
-echo "fi" >> ${DEBIAN}/preinst
-echo "if [ -e /etc/init.d/cloud-exakt-populator ]" >> ${DEBIAN}/preinst
-echo "then" >> ${DEBIAN}/preinst
-echo "/etc/init.d/cloud-exakt-populator stop" >> ${DEBIAN}/preinst
+echo "/etc/init.d/device-measurements-api stop" >> ${DEBIAN}/preinst
 echo "fi" >> ${DEBIAN}/preinst
 
 echo "Copy preinst file to prerm to stop service when uninstalling"
 cp ${DEBIAN}/preinst ${DEBIAN}/prerm
+
+echo "Create postinst file"
+echo "adduser --system --group device-measurements-api" > ${DEBIAN}/postinst
 
 echo "Make control file"
 echo "Package: ${PACKAGE_NAME}" > ${DEBIAN}/control
@@ -94,9 +72,9 @@ echo "Priority: optional" >> ${DEBIAN}/control
 echo "Architecture: amd64" >> ${DEBIAN}/control
 INSTALLED_SIZE=`du -s ${SYSROOT}`
 echo "Installed-Size: ${INSTALLED_SIZE}" >> ${DEBIAN}/control
-echo "Depends: nodejs (>= 0.12)" >> ${DEBIAN}/control
+echo "Depends: nodejs (>= 4.0)" >> ${DEBIAN}/control
 echo "Maintainer: IT  <it.developers@linn.co.uk>" >> ${DEBIAN}/control
-echo "Description: Cloud exakt service and populator service" >> ${DEBIAN}/control
+echo "Description: Device measurements service public API" >> ${DEBIAN}/control
 
 echo "Creating deb package"
 pushd deb-src/
@@ -110,5 +88,5 @@ fakeroot -- tar czf ../control.tar.gz *
 popd
 
 echo 2.0 > debian-binary
-fakeroot -- ar r ../cloud-exakt-${PACKAGE_VERSION}-${CONFIGURATION}.deb debian-binary control.tar.gz data.tar.gz
+fakeroot -- ar r ../${PACKAGE_NAME}-${PACKAGE_VERSION}-${CONFIGURATION}.deb debian-binary control.tar.gz data.tar.gz
 popd

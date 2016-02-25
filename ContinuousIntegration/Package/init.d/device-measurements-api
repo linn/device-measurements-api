@@ -55,9 +55,10 @@
 # ______________________________________________________________________________ 
 #
 PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
-DAEMON_ARGS="/opt/linn/exakt-cloud/CloudExaktPopulator/bin/www"
-DESC="Exakt Populator"
-NODEUSER=exakt:exakt
+DAEMON_ARGS="/opt/linn/device-measurements-api/www"
+DESC="Device Measurements API"
+NODEUSER=device-measurements-api:device-measurements-api
+source ~device-measurements-api/.env
 LOCAL_VAR_RUN=/usr/local/var/run            # in case the init script is run by non-root user, you need to
                                             # indicate a directory writeable by $NODEUSER to store the PID file
                                             # NB : 1) /usr/local/var/run does not exist by DEFAULT. Either create it
@@ -68,12 +69,7 @@ LOCAL_VAR_RUN=/usr/local/var/run            # in case the init script is run by 
 NAME=nodejs                                   # name of the node.js executable
 DAEMON=/usr/bin/$NAME                 # this SHOULD POINT TO where your node executable is
 
-APPLOG_FILE=/var/log/exakt/cloud-exakt-populator.log
-
-PROCESS_TITLE="cloudExaktPopulator"
-NODE_ENV=int
-PORT=52301
-
+APPLOG_FILE=/var/log/device-measurements-api/service.log
 #
 #                                                                              #
 #                   END </MODIFY TO REFLECT YOUR SETTINGS>                     #
@@ -81,8 +77,8 @@ PORT=52301
 # ------------------------------------------------------------------------------ 
 
 # Create Log Dir
-if [ ! -a $APPLOG_FILE ];then mkdir -p /var/log/exakt/;touch $APPLOG_FILE;fi
-chown -R $NODEUSER /var/log/exakt/
+if [ ! -a $APPLOG_FILE ];then mkdir -p /var/log/device-measurements-api/;touch $APPLOG_FILE;fi
+chown -R $NODEUSER /var/log/device-measurements-api/
 
 # Do NOT "set -e"
 
@@ -127,7 +123,11 @@ do_start()
 
 	# Redirects stdout and sterr to APPLOG_FILE
         start-stop-daemon --start --quiet --chuid $NODEUSER --make-pidfile --pidfile $PIDFILE --background     \
-                --startas /bin/bash -- -c "exec /usr/bin/env PROCESS_TITLE=$PROCESS_TITLE PORT=$PORT NODE_ENV=$NODE_ENV $DAEMON $DAEMON_ARGS >> $APPLOG_FILE 2>&1" \
+                --startas /bin/bash -- -c "exec /usr/bin/env \
+                PROCESS_TITLE=$PROCESS_TITLE PORT=$PORT NODE_ENV=$NODE_ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+                AWS_REGION=$AWS_REGION DEVICES_TABLE_NAME=$DEVICES_TABLE_NAME DEVICES_TOPOLOGY_TABLE_NAME=$DEVICES_TOPOLOGY_TABLE_NAME \
+                PRODUCT_DESCRIPTORS_TABLE_NAME=$PRODUCT_DESCRIPTORS_TABLE_NAME PRODUCT_DESCRIPTORS_TABLE_INDEX=$PRODUCT_DESCRIPTORS_TABLE_INDEX \
+                $DAEMON $DAEMON_ARGS >> $APPLOG_FILE 2>&1" \
                 || { [ "$VERBOSE" != no ] && log_daemon_msg  "  --->  could not be start $DESC" "$INIT_SCRIPT_NAME_NOEXT"; return 2; }
 	# This does not redirect output
 	#start-stop-daemon --start --quiet --chuid $NODEUSER --make-pidfile --pidfile $PIDFILE --background --exec $DAEMON -- \
