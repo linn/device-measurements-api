@@ -2,12 +2,13 @@
 
 BRANCH=${1}
 TARGET_HOST=${2}
-PACKAGE_NAME="news-service"-${BRANCH}
+PACKAGE_NAME="device-measurements-api"-${BRANCH}
 
 echo "*************************************"
 echo "*"
+
+echo "* Branch        : ${BRANCH}"
 echo "* Target Host   : ${TARGET_HOST}"
-echo "* Populator     : ${START_POPULATOR}"
 echo "*"
 echo "*************************************"
 
