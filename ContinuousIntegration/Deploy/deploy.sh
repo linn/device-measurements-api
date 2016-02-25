@@ -1,13 +1,11 @@
 #!/bin/bash
 
-CONFIGURATION=${1}
-START_POPULATOR=${2}
-TARGET_HOST=${3}
-PACKAGE_NAME="device-measurements-api"
+BRANCH=${1}
+TARGET_HOST=${2}
+PACKAGE_NAME="news-service"-${BRANCH}
 
 echo "*************************************"
 echo "*"
-echo "* Configuration : ${CONFIGURATION}"
 echo "* Target Host   : ${TARGET_HOST}"
 echo "* Populator     : ${START_POPULATOR}"
 echo "*"
