@@ -2,7 +2,7 @@
 
 let config = require('../config');
 let Repository = require('repository-dynamodb');
-let repository = new Repository(config.devicesTopologyTableName, "dsSerialNumber");
+let repository = new Repository(config.awsRegion, config.devicesTopologyTableName, "dsSerialNumber");
 
 repository.filterBySerialNumber = function loadCloudDeviceTopologiesByProductSerialNumberFromDynamoDb(serialNumber, callback) {
     var params = {
