@@ -13,6 +13,10 @@
     "devicesTopologyTableName": {
       "Type": "String",
       "Description" : "DynamoDb table storing speaker configuration data"
+    },
+    "productDescriptorsTableIndex": {
+      "Type": "String",
+      "Description" : "DynamoDb index of product descriptors"
     }
   },
   "Resources": {
@@ -35,7 +39,7 @@
             },{
               "Effect" : "Allow",
               "Action" : [ "dynamodb:Query" ],
-              "Resource"  : { "Fn::Join" :  [ "", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":545349016803:table/", { "Ref" : "productDescriptorsTableName" } ]]}
+              "Resource"  : { "Fn::Join" :  [ "", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":545349016803:table/", { "Ref" : "productDescriptorsTableName" }, "/index/", { "Ref" : "productDescriptorsTableIndex" } ]]}
             }]
           }
         } ]
