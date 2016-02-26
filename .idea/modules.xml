@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Cloud Exakt Service.iml" filepath="$PROJECT_DIR$/.idea/Cloud Exakt Service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/device-measurements-api.iml" filepath="$PROJECT_DIR$/.idea/device-measurements-api.iml" />
     </modules>
   </component>
 </project>
