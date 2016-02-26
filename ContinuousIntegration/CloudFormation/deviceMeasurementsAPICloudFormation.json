@@ -1,0 +1,61 @@
+{
+  "Description": "Device Measurements API",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters" : {
+    "devicesTableName" : {
+      "Type" : "String",
+      "Description" : "DynamoDB Table Name to store devices"
+    },
+    "productDescriptorsTableName" : {
+      "Type" : "String",
+      "Description" : "DynamoDB Table Name to store product descriptors"
+    },
+    "devicesTopologyTableName": {
+      "Type": "String",
+      "Description" : "DynamoDb table storing speaker configuration data"
+    }
+  },
+  "Resources": {
+    "deviceMeasurementsAPIUser" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path" : "/",
+        "Policies" : [ {
+          "PolicyName" : "deviceMeasurementsAPIPolicy",
+          "PolicyDocument" : {
+            "Version": "2012-10-17",
+            "Statement" : [ {
+              "Effect" : "Allow",
+              "Action" : [ "dynamodb:Query", "dynamodb:PutItem" ],
+              "Resource"  : { "Fn::Join" :  [ "", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":545349016803:table/", { "Ref" : "devicesTopologyTableName" } ]]}
+            },{
+              "Effect" : "Allow",
+              "Action" : [ "dynamodb:GetItem" ],
+              "Resource"  : { "Fn::Join" :  [ "", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":545349016803:table/", { "Ref" : "devicesTableName" } ]]}
+            },{
+              "Effect" : "Allow",
+              "Action" : [ "dynamodb:Query" ],
+              "Resource"  : { "Fn::Join" :  [ "", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":545349016803:table/", { "Ref" : "productDescriptorsTableName" } ]]}
+            }]
+          }
+        } ]
+      }
+    },
+    "deviceMeasurementsAPIAccesskey" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : { "Ref" : "deviceMeasurementsAPIUser" }
+      }
+    }
+  },
+  "Outputs" : {
+    "AccessKey" : {
+      "Value" : { "Ref" : "deviceMeasurementsAPIAccesskey" }
+    },
+    "SecretKey" : {
+      "Value" : {
+        "Fn::GetAtt" : [ "deviceMeasurementsAPIAccesskey", "SecretAccessKey" ]
+      }
+    }
+  }
+}
