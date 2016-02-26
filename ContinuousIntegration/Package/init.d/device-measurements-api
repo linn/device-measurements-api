@@ -55,7 +55,7 @@
 # ______________________________________________________________________________ 
 #
 PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
-DAEMON_ARGS="/opt/linn/device-measurements-api/www"
+DAEMON_ARGS="/opt/linn/device-measurements-api/bin/www"
 DESC="Device Measurements API"
 NODEUSER=device-measurements-api:device-measurements-api
 source ~device-measurements-api/.env
