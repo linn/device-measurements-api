@@ -18,24 +18,6 @@ define tag_docker
 	fi
 endef
 
-define label_dockerfile
-        @echo "" >> $(1)
-        @echo "LABEL org.label-schema.vendor=\"Linn Products Ltd.\" \\" >> $(1)
-        @echo "      org.label-schema.build-date=\"$(BUILD_DATE)\" \\" >> $(1)
-        @echo "      org.label-schema.docker.dockerfile=\"/Dockerfile\" \\" >> $(1)
-        @echo "      org.label-schema.version=\"$(TRAVIS_BUILD_NUMBER)\" \\" >> $(1)
-        @echo "      org.label-schema.vcs-ref=\"$(VCS_REF)\" \\" >> $(1)
-        @echo "      org.label-schema.vcs-type=\"Git\" \\" >> $(1)
-        @echo "      org.label-schema.vcs-url=\"https://github.com/linn/device-measurements-api\" \\" >> $(1)
-        @echo "      uk.co.linn.build-number=$(TRAVIS_BUILD_NUMBER) \\" >> $(1)
-        @echo "      uk.co.linn.branch=$(TRAVIS_BRANCH) \\" >> $(1)
-        @if [ "$(TRAVIS_BRANCH)" = "master" -a "$(TRAVIS_PULL_REQUEST)" = "false" ]; then \
-                echo "      uk.co.linn.is-production=true" >> $(1); \
-        else \
-                echo "      uk.co.linn.is-production=false" >> $(1); \
-        fi
-endef
-
 build:
 	npm install
 
@@ -46,8 +28,11 @@ test: build
 	NODE_ENV=test npm test
 
 all-the-dockers: build ping-resource
-	$(call label_dockerfile, Dockerfile)
-	docker build -t $(DOCKER):$(TRAVIS_BUILD_NUMBER) .
+	docker build -t $(DOCKER):$(TRAVIS_BUILD_NUMBER) \
+	--build-arg VCS_REF=$(VCS_REF) \
+	--build-arg VERSION=$(TRAVIS_BUILD_NUMBER) \
+	--build-arg BUILD_DATE=$(BUILD_DATE) \
+	.
 
 docker-push:
 	$(call tag_docker, $(DOCKER))
