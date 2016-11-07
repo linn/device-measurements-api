@@ -2,8 +2,6 @@ DOCKER := linn/device-measurements-api
 DOCKER_BRANCH_TAG := $(shell echo ${TRAVIS_BRANCH} | sed s/\#/_/g)
 TIMESTAMP := $(shell date --utc +%FT%TZ)
 PINGJSON := ping.json
-BUILD_DATE :=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
-VCS_REF :=`git rev-parse --short HEAD`
 DEV_ENV := ./.env
 
 define tag_docker
@@ -29,9 +27,9 @@ test: build
 
 all-the-dockers: build ping-resource
 	docker build -t $(DOCKER):$(TRAVIS_BUILD_NUMBER) \
-	--build-arg VCS_REF=$(VCS_REF) \
+	--build-arg VCS_REF=`git rev-parse --short HEAD` \
 	--build-arg VERSION=$(TRAVIS_BUILD_NUMBER) \
-	--build-arg BUILD_DATE=$(BUILD_DATE) \
+	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 	.
 
 docker-push:
