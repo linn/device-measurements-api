@@ -18,7 +18,6 @@
     "dynamodb-doc": "^1.0.0",
     "express": "^4.11.2",
     "jade": "~1.9.1",
-    "moment": "^2.10.2",
     "morgan": "~1.5.1",
     "repository-dynamodb": "^0.9.5",
     "underscore": "^1.7.0",

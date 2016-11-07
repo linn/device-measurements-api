@@ -1,6 +1,5 @@
 "use strict";
 
-const moment = require('moment');
 const _ = require('underscore');
 
 const spaceContentType = 'application/vnd.linn.space-configuration+json; version=1';
