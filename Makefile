@@ -2,6 +2,7 @@ DOCKER := linn/device-measurements-api
 DOCKER_BRANCH_TAG := $(shell echo ${TRAVIS_BRANCH} | sed s/\#/_/g)
 TIMESTAMP := $(shell date --utc +%FT%TZ)
 PINGJSON := ping.json
+DEV_ENV := ./.env
 
 define tag_docker
 	@if [ "$(TRAVIS_BRANCH)" != "master" ]; then \
@@ -24,18 +25,13 @@ ping-resource:
 test: build
 	NODE_ENV=test npm test
 
-$(DOCKER): build ping-resource
-	docker build -t $(DOCKER):$(TRAVIS_BUILD_NUMBER) .
-	
-all-the-dockers: $(DOCKER)
-
-docker-tag:
-	$(call tag_docker, $(DOCKER))
+all-the-dockers: build ping-resource
+	docker build -t $(DOCKER):$(TRAVIS_BUILD_NUMBER) \
+	--build-arg VCS_REF=`git rev-parse --short HEAD` \
+	--build-arg VERSION=$(TRAVIS_BUILD_NUMBER) \
+	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+	.
 
 docker-push:
-	@if [ -n "$(CI)" ]; then \
-		docker push $(DOCKER); \
-	else \
-		echo "Only push to Docker from Travis"; \
-		exit 1; \
-	fi
+	$(call tag_docker, $(DOCKER))
+	docker push $(DOCKER)

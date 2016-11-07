@@ -28,7 +28,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/device-measurements/:vendor/:productType/:serialNumber', deviceMeasurementsApi.get);
 
-app.get('/devices/:serialNumber/topology', deviceTopologyApi.get);
 app.post('/devices/:serialNumber/topology', deviceTopologyApi.post);
 
 app.get('/ping', pingApi.ping);
