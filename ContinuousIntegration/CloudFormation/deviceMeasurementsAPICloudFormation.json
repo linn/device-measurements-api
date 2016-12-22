@@ -25,6 +25,10 @@
     "productDescriptorsTableIndex": {
       "Type": "String",
       "Description" : "DynamoDb index of product descriptors"
+    },
+    "albTargetGroupArn": {
+      "Type": "String",
+      "Description": "Target Group ARN for device details api"
     }
   },
   "Resources": {
@@ -72,7 +76,6 @@
           "Memory": "300",
           "PortMappings": [
             {
-              "HostPort": 60300,
               "ContainerPort": 3000
             }
           ],
@@ -122,8 +125,15 @@
     "Type": "AWS::ECS::Service",
     "Properties" : {
       "Cluster": { "Ref":"targetCluster" },
-      "DesiredCount": "1",
-      "TaskDefinition" : {"Ref":"taskDefinition"}
+      "DesiredCount": "2",
+      "TaskDefinition" : { "Ref":"taskDefinition" }, "Role": "ecsServiceRole",
+      "LoadBalancers": [
+        {
+          "ContainerName": "device-measurements-api",
+          "ContainerPort": 3000,
+          "TargetGroupArn": { "Ref": "albTargetGroupArn" }
+        }
+      ]
     }
   }
 }
