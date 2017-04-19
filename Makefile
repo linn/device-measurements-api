@@ -2,7 +2,6 @@ DOCKER := linn/device-measurements-api
 DOCKER_BRANCH_TAG := $(shell echo ${TRAVIS_BRANCH} | sed s/\#/_/g)
 TIMESTAMP := $(shell date --utc +%FT%TZ)
 PINGJSON := ping.json
-DEV_ENV := ./.env
 
 define tag_docker
 	@if [ "$(TRAVIS_BRANCH)" != "master" ]; then \
