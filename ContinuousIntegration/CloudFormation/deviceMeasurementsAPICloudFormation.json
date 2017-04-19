@@ -32,9 +32,19 @@
     }
   },
   "Resources": {
-    "deviceMeasurementsAPIUser" : {
-      "Type" : "AWS::IAM::User",
+    "taskDefinitionRole" : {
+      "Type" : "AWS::IAM::Role",
       "Properties" : {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [ {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "ecs-tasks.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          } ]
+        },
         "Path" : "/",
         "Policies" : [ {
           "PolicyName" : "deviceMeasurementsAPIPolicy",
@@ -57,11 +67,71 @@
         } ]
       }
     },
-    "deviceMeasurementsAPIAccesskey" : {
-      "Type" : "AWS::IAM::AccessKey",
-      "Properties" : {
-        "UserName" : { "Ref" : "deviceMeasurementsAPIUser" }
+    "taskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "TaskRoleArn": {"Fn::GetAtt" : ["taskDefinitionRole", "Arn"] },
+        "ContainerDefinitions": [
+          {
+            "Name": "device-measurements-api",
+            "Cpu": "1",
+            "Essential": "true",
+            "Image": { "Fn::Join" :  [ "", [ "docker.io/linn/device-measurements-api:", { "Ref" : "dockerTag" } ]]},
+            "Memory": "200",
+            "PortMappings": [
+              {
+                "ContainerPort": 3000
+              }
+            ],
+            "Environment": [
+              {
+                "Name": "AWS_REGION",
+                "Value": { "Ref": "AWS::Region" }
+              },
+              {
+                "Name": "DEVICES_TABLE_NAME",
+                "Value": { "Ref": "devicesTableName" }
+              },
+              {
+                "Name": "DEVICES_TOPOLOGY_TABLE_NAME",
+                "Value": { "Ref": "devicesTopologyTableName" }
+              },
+              {
+                "Name": "PRODUCT_DESCRIPTORS_TABLE_NAME",
+                "Value": { "Ref": "productDescriptorsTableName" }
+              },
+              {
+                "Name": "PRODUCT_DESCRIPTORS_TABLE_INDEX",
+                "Value": { "Ref": "productDescriptorsTableIndex" }
+              },
+              {
+                "Name": "NODE_ENV",
+                "Value": "release"
+              },
+              {
+                "Name": "PORT",
+                "Value": "3000"
+              }
+            ]
+          }
+        ]
       }
+    },
+    "service": {
+      "Type": "AWS::ECS::Service",
+      "Properties" : {
+        "Cluster": { "Ref":"targetCluster" },
+        "DesiredCount": "2",
+        "TaskDefinition" : { "Ref":"taskDefinition" }, "Role": "ecsServiceRole",
+        "LoadBalancers": [
+          {
+            "ContainerName": "device-measurements-api",
+            "ContainerPort": 3000,
+            "TargetGroupArn": { "Ref": "albTargetGroupArn" }
+          }
+        ]
+      }
+<<<<<<< HEAD
     },
     "taskDefinition": {
       "Type": "AWS::ECS::TaskDefinition",
