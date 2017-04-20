@@ -32,9 +32,19 @@
     }
   },
   "Resources": {
-    "deviceMeasurementsAPIUser" : {
-      "Type" : "AWS::IAM::User",
+    "taskDefinitionRole" : {
+      "Type" : "AWS::IAM::Role",
       "Properties" : {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [ {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "ecs-tasks.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          } ]
+        },
         "Path" : "/",
         "Policies" : [ {
           "PolicyName" : "deviceMeasurementsAPIPolicy",
@@ -57,22 +67,17 @@
         } ]
       }
     },
-    "deviceMeasurementsAPIAccesskey" : {
-      "Type" : "AWS::IAM::AccessKey",
-      "Properties" : {
-        "UserName" : { "Ref" : "deviceMeasurementsAPIUser" }
-      }
-    },
     "taskDefinition": {
       "Type": "AWS::ECS::TaskDefinition",
       "Properties": {
+        "TaskRoleArn": {"Fn::GetAtt" : ["taskDefinitionRole", "Arn"] },
         "ContainerDefinitions": [
           {
             "Name": "device-measurements-api",
             "Cpu": "1",
             "Essential": "true",
             "Image": { "Fn::Join" :  [ "", [ "docker.io/linn/device-measurements-api:", { "Ref" : "dockerTag" } ]]},
-            "Memory": "300",
+            "Memory": "200",
             "PortMappings": [
               {
                 "ContainerPort": 3000
@@ -82,14 +87,6 @@
               {
                 "Name": "AWS_REGION",
                 "Value": { "Ref": "AWS::Region" }
-              },
-              {
-                "Name": "AWS_ACCESS_KEY_ID",
-                "Value": { "Ref": "deviceMeasurementsAPIAccesskey" }
-              },
-              {
-                "Name": "AWS_SECRET_ACCESS_KEY",
-                "Value": { "Fn::GetAtt": [ "deviceMeasurementsAPIAccesskey", "SecretAccessKey" ] }
               },
               {
                 "Name": "DEVICES_TABLE_NAME",
