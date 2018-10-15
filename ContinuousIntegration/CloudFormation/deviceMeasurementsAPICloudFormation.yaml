@@ -1,0 +1,114 @@
+Description: Device Measurements API
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  targetCluster:
+    Type: String
+    Description: ECS Cluster name within which this application should be run
+  dockerTag:
+    Type: String
+    Description: Docker tag to deploy
+  devicesTableName:
+    Type: String
+    Description: DynamoDB Table Name to store devices
+  productDescriptorsTableName:
+    Type: String
+    Description: DynamoDB Table Name to store product descriptors
+  devicesTopologyTableName:
+    Type: String
+    Description: DynamoDb table storing speaker configuration data
+  productDescriptorsTableIndex:
+    Type: String
+    Description: DynamoDb index of product descriptors
+  albTargetGroupArn:
+    Type: String
+    Description: Target Group ARN for device details api
+Resources:
+  taskDefinitionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: deviceMeasurementsAPIPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:PutItem
+                Resource: !Join
+                  - ''
+                  - - 'arn:aws:dynamodb:'
+                    - !Ref 'AWS::Region'
+                    - :545349016803:table/
+                    - !Ref 'devicesTopologyTableName'
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                Resource: !Join
+                  - ''
+                  - - 'arn:aws:dynamodb:'
+                    - !Ref 'AWS::Region'
+                    - :545349016803:table/
+                    - !Ref 'devicesTableName'
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                Resource: !Join
+                  - ''
+                  - - 'arn:aws:dynamodb:'
+                    - !Ref 'AWS::Region'
+                    - :545349016803:table/
+                    - !Ref 'productDescriptorsTableName'
+                    - /index/
+                    - !Ref 'productDescriptorsTableIndex'
+  taskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      TaskRoleArn: !GetAtt 'taskDefinitionRole.Arn'
+      ContainerDefinitions:
+        - Name: device-measurements-api
+          Cpu: '1'
+          Essential: 'true'
+          Image: !Join
+            - ''
+            - - 'docker.io/linn/device-measurements-api:'
+              - !Ref 'dockerTag'
+          Memory: '200'
+          PortMappings:
+            - ContainerPort: 3000
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref 'AWS::Region'
+            - Name: DEVICES_TABLE_NAME
+              Value: !Ref 'devicesTableName'
+            - Name: DEVICES_TOPOLOGY_TABLE_NAME
+              Value: !Ref 'devicesTopologyTableName'
+            - Name: PRODUCT_DESCRIPTORS_TABLE_NAME
+              Value: !Ref 'productDescriptorsTableName'
+            - Name: PRODUCT_DESCRIPTORS_TABLE_INDEX
+              Value: !Ref 'productDescriptorsTableIndex'
+            - Name: NODE_ENV
+              Value: release
+            - Name: PORT
+              Value: '3000'
+  service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref 'targetCluster'
+      DesiredCount: '2'
+      TaskDefinition: !Ref 'taskDefinition'
+      Role: ecsServiceRole
+      LoadBalancers:
+        - ContainerName: device-measurements-api
+          ContainerPort: 3000
+          TargetGroupArn: !Ref 'albTargetGroupArn'
