@@ -12,7 +12,8 @@
       "metadata": {
         "fStart": "10070.8",
         "fStop": "21514.9"
-      }
+      },
+      "version": 99
     }, {
       "type": "file",
       "measuredOn": "2014-02-21T17:50:00Z",
@@ -24,7 +25,8 @@
         "filename": "test.tdms",
         "href": "/device-measurements/files/generic-tweeter-impedance.tdms"
       }]
-    }]
+    }],
+    "componentVersion": 99
   }],
   "lastUpdate": "2014-02-21T17:50:00Z"
 }
