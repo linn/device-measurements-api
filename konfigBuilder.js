@@ -15,9 +15,11 @@ function invertMeasurements(component) {
             );
         }
     });
+    const componentVersion = _.reduce(measurements, (accum, m) => Math.max(accum, parseInt(m.version) || 0), 0);
     return {
         componentName: component.componentName,
-        measurements: measurements
+        measurements: measurements,
+        componentVersion
     };
 }
 
